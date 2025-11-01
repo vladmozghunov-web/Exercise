@@ -1,0 +1,81 @@
+using System;
+using System.Collections.Generic;
+
+public enum StopwatchState
+{
+    Ready,
+    Running,
+    Stopped
+}
+
+public class SplitSecondStopwatch
+{
+    private readonly TimeProvider _time;
+    private DateTimeOffset _startTime;
+    private DateTimeOffset _lapStartTime;
+    private TimeSpan _total = TimeSpan.Zero;
+    private List<TimeSpan> _laps = new List<TimeSpan>();
+
+    public StopwatchState State { get; private set; } = StopwatchState.Ready;
+    public TimeSpan CurrentLap => State == StopwatchState.Running ? _time.GetUtcNow() - _lapStartTime : _currentLap;
+    public TimeSpan Total => State == StopwatchState.Running ? _total + (_time.GetUtcNow() - _startTime) : _total;
+    public IReadOnlyCollection<TimeSpan> PreviousLaps => _laps.AsReadOnly();
+
+    private TimeSpan _currentLap = TimeSpan.Zero;
+
+    public SplitSecondStopwatch(TimeProvider time)
+    {
+        _time = time;
+    }
+
+    public void Start()
+    {
+        if (State == StopwatchState.Running)
+            throw new InvalidOperationException();
+        if (State == StopwatchState.Ready)
+        {
+            _startTime = _time.GetUtcNow();
+            _lapStartTime = _startTime;
+            _total = TimeSpan.Zero;
+            _currentLap = TimeSpan.Zero;
+        }
+        else if (State == StopwatchState.Stopped)
+        {
+            var now = _time.GetUtcNow();
+            _startTime = now;
+            _lapStartTime = now - _currentLap;
+        }
+        State = StopwatchState.Running;
+    }
+
+    public void Stop()
+    {
+        if (State != StopwatchState.Running)
+            throw new InvalidOperationException();
+        var now = _time.GetUtcNow();
+        _currentLap = now - _lapStartTime;
+        _total += now - _startTime;
+        State = StopwatchState.Stopped;
+    }
+
+    public void Lap()
+    {
+        if (State != StopwatchState.Running)
+            throw new InvalidOperationException();
+        var now = _time.GetUtcNow();
+        var lapTime = now - _lapStartTime;
+        _laps.Add(lapTime);
+        _lapStartTime = now;
+        _currentLap = TimeSpan.Zero;
+    }
+
+    public void Reset()
+    {
+        if (State != StopwatchState.Stopped)
+            throw new InvalidOperationException();
+        _laps.Clear();
+        _total = TimeSpan.Zero;
+        _currentLap = TimeSpan.Zero;
+        State = StopwatchState.Ready;
+    }
+}
