@@ -1,0 +1,41 @@
+using System;
+using System.Linq;
+
+public static class BafflingBirthdays
+{
+    private static readonly Random random = new Random();
+
+    public static DateOnly[] RandomBirthdates(int numberOfBirthdays)
+    {
+        DateOnly[] dates = new DateOnly[numberOfBirthdays];
+        for (int i = 0; i < numberOfBirthdays; i++)
+        {
+            int dayOfYear = random.Next(1, 366);
+            dates[i] = new DateOnly(2000, 1, 1).AddDays(dayOfYear - 1);
+        }
+        return dates;
+    }
+
+    public static bool SharedBirthday(DateOnly[] birthdays)
+    {
+        return birthdays
+            .Select(d => (d.Month, d.Day))
+            .Distinct()
+            .Count() < birthdays.Length;
+    }
+
+    public static double EstimatedProbabilityOfSharedBirthday(int numberOfBirthdays)
+    {
+        int trials = 10000;
+        int sharedCount = 0;
+
+        for (int i = 0; i < trials; i++)
+        {
+            var dates = RandomBirthdates(numberOfBirthdays);
+            if (SharedBirthday(dates))
+                sharedCount++;
+        }
+
+        return (double)sharedCount / trials;
+    }
+}
