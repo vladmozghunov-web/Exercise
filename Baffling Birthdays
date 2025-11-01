@@ -11,7 +11,8 @@ public static class BafflingBirthdays
         for (int i = 0; i < numberOfBirthdays; i++)
         {
             int dayOfYear = random.Next(1, 366);
-            dates[i] = new DateOnly(2000, 1, 1).AddDays(dayOfYear - 1);
+            // Використовуємо невисокосний рік (1999)
+            dates[i] = new DateOnly(1999, 1, 1).AddDays(dayOfYear - 1);
         }
         return dates;
     }
@@ -36,6 +37,7 @@ public static class BafflingBirthdays
                 sharedCount++;
         }
 
-        return (double)sharedCount / trials;
+        // Повертати у відсотках, не у частках
+        return (double)sharedCount / trials * 100;
     }
 }
