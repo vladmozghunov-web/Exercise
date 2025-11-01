@@ -37,7 +37,6 @@ public static class BafflingBirthdays
                 sharedCount++;
         }
 
-        // Повертати у відсотках, не у частках
         return (double)sharedCount / trials * 100;
     }
 }
