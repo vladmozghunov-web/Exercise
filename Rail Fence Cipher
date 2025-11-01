@@ -1,0 +1,66 @@
+using System;
+using System.Text;
+
+public class RailFenceCipher
+{
+    private int rails;
+
+    public RailFenceCipher(int rails)
+    {
+        this.rails = rails;
+    }
+
+    public string Encode(string text)
+    {
+        if (rails <= 1) return text;
+        string[] rows = new string[rails];
+        for (int i = 0; i < rails; i++) rows[i] = "";
+        int r = 0, dir = 1;
+        for (int i = 0; i < text.Length; i++)
+        {
+            rows[r] += text[i];
+            if (r == 0) dir = 1;
+            else if (r == rails - 1) dir = -1;
+            r += dir;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < rails; i++) sb.Append(rows[i]);
+        return sb.ToString();
+    }
+
+    public string Decode(string text)
+    {
+        if (rails <= 1) return text;
+        int n = text.Length;
+        bool[,] mark = new bool[rails, n];
+        int r = 0, dir = 1;
+        for (int c = 0; c < n; c++)
+        {
+            mark[r, c] = true;
+            if (r == 0) dir = 1;
+            else if (r == rails - 1) dir = -1;
+            r += dir;
+        }
+        char[,] grid = new char[rails, n];
+        int idx = 0;
+        for (int i = 0; i < rails; i++)
+            for (int j = 0; j < n; j++)
+                if (mark[i, j]) grid[i, j] = text[idx++];
+
+        StringBuilder res = new StringBuilder();
+        r = 0; dir = 1;
+        for (int c = 0; c < n; c++)
+        {
+            res.Append(grid[r, c]);
+            if (r == 0) dir = 1;
+            else if (r == rails - 1) dir = -1;
+            r += dir;
+        }
+        return res.ToString();
+    }
+}
+
+        return res.ToString();
+    }
+}
+
