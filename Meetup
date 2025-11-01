@@ -1,0 +1,62 @@
+using System;
+
+public enum Schedule
+{
+    First,
+    Second,
+    Third,
+    Fourth,
+    Last,
+    Teenth
+}
+
+public class Meetup
+{
+    private int _month;
+    private int _year;
+
+    public Meetup(int month, int year)
+    {
+        _month = month;
+        _year = year;
+    }
+
+    public DateTime Day(DayOfWeek dayOfWeek, Schedule schedule)
+    {
+        DateTime date;
+
+        switch (schedule)
+        {
+            case Schedule.Teenth:
+                for (int day = 13; day <= 19; day++)
+                {
+                    date = new DateTime(_year, _month, day);
+                    if (date.DayOfWeek == dayOfWeek)
+                        return date;
+                }
+                break;
+
+            case Schedule.Last:
+                date = new DateTime(_year, _month, DateTime.DaysInMonth(_year, _month));
+                while (date.DayOfWeek != dayOfWeek)
+                    date = date.AddDays(-1);
+                return date;
+
+            default:
+                int offset = schedule switch
+                {
+                    Schedule.First => 0,
+                    Schedule.Second => 1,
+                    Schedule.Third => 2,
+                    Schedule.Fourth => 3,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                date = new DateTime(_year, _month, 1);
+                while (date.DayOfWeek != dayOfWeek)
+                    date = date.AddDays(1);
+                return date.AddDays(offset * 7);
+        }
+
+        throw new ArgumentException("Invalid schedule");
+    }
+}
