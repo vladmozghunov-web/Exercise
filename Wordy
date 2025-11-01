@@ -1,0 +1,92 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public static class Wordy
+{
+    public static int Answer(string question)
+    {
+        if (!question.StartsWith("What is") || !question.EndsWith("?"))
+            throw new ArgumentException("Invalid question format.");
+
+        question = question.Replace("What is", "")
+                           .Replace("?", "")
+                           .Trim();
+
+        if (string.IsNullOrWhiteSpace(question))
+            throw new ArgumentException("No content in question.");
+
+        var words = question.Split(' ', StringSplitOptions.RemoveEmptyEntries).ToList();
+
+        var numbers = new List<int>();
+        var operations = new List<string>();
+        bool expectNumber = true; 
+
+        for (int i = 0; i < words.Count; i++)
+        {
+            string w = words[i];
+
+            if (int.TryParse(w, out int n))
+            {
+                if (!expectNumber)
+                    throw new ArgumentException("Invalid syntax: two numbers in a row.");
+                numbers.Add(n);
+                expectNumber = false;
+            }
+            else if (w == "plus" || w == "minus" || w == "multiplied" || w == "divided")
+            {
+                if (expectNumber)
+                    throw new ArgumentException("Invalid syntax: operator in wrong place.");
+
+                string op = w;
+                if ((op == "multiplied" || op == "divided") && i + 1 < words.Count && words[i + 1] == "by")
+                    i++;
+
+                operations.Add(op);
+                expectNumber = true;
+            }
+            else if (w.StartsWith("-") && int.TryParse(w, out int neg))
+            {
+                if (!expectNumber)
+                    throw new ArgumentException("Invalid syntax: two numbers in a row.");
+                numbers.Add(neg);
+                expectNumber = false;
+            }
+            else
+            {
+                throw new ArgumentException("Unknown operation or invalid syntax.");
+            }
+        }
+
+        if (expectNumber) 
+            throw new ArgumentException("Expression cannot end with operator.");
+
+        if (numbers.Count != operations.Count + 1)
+            throw new ArgumentException("Invalid expression format.");
+
+        int result = numbers[0];
+        for (int i = 0; i < operations.Count; i++)
+        {
+            switch (operations[i])
+            {
+                case "plus":
+                    result += numbers[i + 1];
+                    break;
+                case "minus":
+                    result -= numbers[i + 1];
+                    break;
+                case "multiplied":
+                    result *= numbers[i + 1];
+                    break;
+                case "divided":
+                    result /= numbers[i + 1];
+                    break;
+                default:
+                    throw new ArgumentException("Unsupported operation.");
+            }
+        }
+
+        return result;
+    }
+}
+
